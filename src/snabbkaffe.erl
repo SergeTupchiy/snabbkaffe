@@ -705,11 +705,18 @@ pp(#{?snk_kind := Kind0} = D) ->
            end,
     io_lib:format("[~s] ~0p.", [Kind, maps:without([?snk_kind], D)]).
 
+-ifndef(CONCUERROR).
 dump_trace(IoDevice, Trace) ->
     dump_trace(IoDevice, Trace, fun pp/1).
 
 dump_trace(IoDevice, Trace, Formatter) ->
   io:format(IoDevice, "~s~n", [format_trace(Trace, Formatter)]).
+-else.
+dump_trace(IoDevice, Trace) ->
+    %% Concuerror doesn't support calls to built-in erlang:fun_to_list/1
+    %% which is used in io_lib.
+    lists:foreach(fun(Event) -> io:format(IoDevice, "~0p.~n", [Event]) end, Trace).
+-endif. %% CONCUERROR
 
 format_trace(Trace) ->
     format_trace(Trace, fun pp/1).
